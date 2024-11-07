@@ -1,15 +1,6 @@
-# Simple add function
-def add(a, b):
-    return a + b
+# Import the calculator function from app/calculator.py
+from app.calculator import calculator
 
-# Simple add function
-def subtract(a, b):
-    return a - b
-
-# Simple add function
-def multiply(a, b):
-    return a * b
-
-# Simple add function
-def divide(a, b):
-    return a / b
+# If this script is run directly, start the calculator.
+if __name__ == "__main__":
+    calculator()
