@@ -1,28 +1,38 @@
-from typing import Union
+def addition(a: float, b: float) -> float:
+    """
+    Adds two numbers and returns the sum.
+    """
+    return a + b
 
-# Define a type alias for numbers (both int and float)
+def subtraction(a: float, b: float) -> float:
+    """
+    Subtracts the second number from the first and returns the result.
+    """
+    return a - b
 
-Number = Union[int, float]
+def multiplication(a: float, b: float) -> float:
+    """
+    Multiplies two numbers and returns the product.
+    """
+    return a * b
 
-# addition function 
-def addition(a: Number, b: Number) -> Number:
-   
-    return a +  b  # Return the result of a plus b
+def division(a: float, b: float) -> float:
+    """
+    Divides the first number by the second and returns the quotient.
+    Raises ValueError if the second number is zero.
+    """
+    if b == 0:
+        raise ValueError("Division by zero is not allowed.")
+    return a / b
 
-def subtraction(a: Number, b: Number) -> Number:
+def power(a: float, b: float) -> float:
+    """
+    Returns the result of raising the first number to the power of the second.
+    """
+    return a ** b
 
-    return a - b #return result of a minus b 
-
-def multiplication(a: Number, b: Number) -> Number:
-    
-    return a * b  # Return the product of a and b
-
-def division(a: Number, b: Number) -> Number:
-
-    return a / b  # Return the result of a divided by b
-
-def power(a: Number, b: Number) -> Number:
-    return a ** b # return the power of a by b 
-
-def modulus(a: Number, b: Number) -> Number:
-    return a % b  # return float value of a modulus b 
+def modulus(a: float, b: float) -> float:
+    """
+    Returns the remainder of dividing the first number by the second.
+    """
+    return a % b
