@@ -1,6 +1,6 @@
 """
-This file contains a simple calculator that can add, subtract, multiply, and divide numbers based on user input.
-It now includes a history feature that allows users to view past calculations, clear the history, and undo the last calculation.
+This file contains simple calculator operations: add, subtract, multiply, divide , power, and modulus.
+It includes a history feature that allows users to view past calculations, clear  history, and undo last calculation.
 """
 
 # Import the math operations from the operations module.
