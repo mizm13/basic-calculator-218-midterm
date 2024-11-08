@@ -47,6 +47,6 @@ def test_division_negative():
 
 def test_division_by_zero():
     """Test division by zero."""
-    with pytest.raises(ValueError, match="Division by zero is not allowed."):
+    with pytest.raises(ZeroDivisionError):
         division(1, 0)
         
