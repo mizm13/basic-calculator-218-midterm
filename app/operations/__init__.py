@@ -1,38 +1,47 @@
-def addition(a: float, b: float) -> float:
-    """
-    Adds two numbers and returns the sum.
-    """
-    return a + b
+from typing import Union
 
-def subtraction(a: float, b: float) -> float:
-    """
-    Subtracts the second number from the first and returns the result.
-    """
-    return a - b
+# Define a type alias for numbers (both int and float)
 
-def multiplication(a: float, b: float) -> float:
-    """
-    Multiplies two numbers and returns the product.
-    """
-    return a * b
+Number = Union[int, float]
 
-def division(a: float, b: float) -> float:
+# addition function 
+def addition(a: Number, b: Number) -> Number:
     """
-    Divides the first number by the second and returns the quotient.
-    Raises ValueError if the second number is zero.
+    This function takes two numbers as arguments and returns their sum.
+    
+    Arguments:
+    a -- The first number (float or int)
+    b -- The second number (float or int)
     """
-    if b == 0:
-        raise ValueError("Division by zero is not allowed.")
-    return a / b
+    return a + b  # Return the sum of a and b
 
-def power(a: float, b: float) -> float:
+# subtraction function
+def subtraction(a: Number, b: Number) -> Number:
     """
-    Returns the result of raising the first number to the power of the second.
+    This function takes two numbers as arguments and returns the result of subtracting b from a.
+    
+    Arguments:
+    a -- The first number (float or int)
+    b -- The second number (float or int)
     """
-    return a ** b
+    return a - b  # Return the result of a minus b
 
-def modulus(a: float, b: float) -> float:
+def multiplication(a: Number, b: Number) -> Number:
     """
-    Returns the remainder of dividing the first number by the second.
+    This function takes two numbers as arguments and returns their product.
+    
+    Arguments:
+    a -- The first number (float or int)
+    b -- The second number (float or int)
     """
-    return a % b
+    return a * b  # Return the product of a and b
+
+def division(a: Number, b: Number) -> Number:
+    """
+    This function takes two numbers as arguments and returns the result of dividing a by b.
+    
+    Arguments:
+    a -- The first number (float or int)
+    b -- The second number (float or int)
+    """
+    return a / b  # Return the result of a divided by b

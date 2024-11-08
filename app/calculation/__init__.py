@@ -47,7 +47,9 @@ class Calculation(ABC):
     def compute(self) -> Number:
         """
         Abstract method to compute the result of the calculation.
+        
         Must be implemented by any subclass.
+
         Returns:
         Number: The result of the calculation.
         """
@@ -57,6 +59,7 @@ class Calculation(ABC):
     def __str__(self) -> str:
         """
         Abstract method to return a user-friendly string representation.
+
         Returns:
         str: The formatted string representation of the operation.
         """
@@ -66,6 +69,7 @@ class Calculation(ABC):
     def __repr__(self) -> str:
         """
         Abstract method to return a detailed representation for debugging.
+
         Returns:
         str: A detailed representation of the operation.
         """
@@ -74,6 +78,7 @@ class Calculation(ABC):
 class Addition(Calculation):
     """
     Represents an addition operation.
+    
     Inherits from the Calculation base class and implements the `compute`, `__str__`, and `__repr__` methods.
     """
     
@@ -89,6 +94,7 @@ class Addition(Calculation):
 class Subtraction(Calculation):
     """
     Represents a subtraction operation.
+    
     Inherits from the Calculation base class and implements the `compute`, `__str__`, and `__repr__` methods.
     """
     
@@ -104,6 +110,7 @@ class Subtraction(Calculation):
 class Multiplication(Calculation):
     """
     Represents a multiplication operation.
+    
     Inherits from the Calculation base class and implements the `compute`, `__str__`, and `__repr__` methods.
     """
     
@@ -119,6 +126,7 @@ class Multiplication(Calculation):
 class Division(Calculation):
     """
     Represents a division operation.
+    
     Inherits from the Calculation base class and implements the `compute`, `__str__`, and `__repr__` methods.
     """
     
