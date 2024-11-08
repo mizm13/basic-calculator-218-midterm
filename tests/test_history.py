@@ -1,88 +1,120 @@
-import pytest
-from app.history import History
+"""
+This module contains tests for the HistoryManager and OperationCommand classes. 
+Tests include adding to history, retrieving the latest operations, clearing history, 
+and undoing operations in the history.
+"""
+from unittest.mock import Mock
+import pytest  # pylint: disable=unused-import
+from app.calculation import Calculation
+from app.history_manager import OperationCommand, HistoryManager
 
-# Module-level docstring
-"""Test suite for the History class. This suite verifies the functionality of adding, 
-   retrieving, and clearing calculations, as well as handling edge cases like undoing 
-   operations on empty history."""
+def test_operation_command_execution():
+    """
+    Test that OperationCommand calls the compute method on the given operation.
+    """
+    # Create a mock Calculation object
+    mock_operation = Mock(spec=Calculation)
+    mock_operation.compute.return_value = 10  # Set compute return value
 
-def test_add_calculation():
-    """Positive test: Add a calculation and verify it's in history."""
-    history = History()
-    history.add_calculation("add 2 3 = 5")
-    assert history.get_history() == ["add 2 3 = 5"]
+    # Create an OperationCommand with the mock operation
+    command = OperationCommand(mock_operation)
 
-def test_add_multiple_calculations():
-    """Positive test: Add multiple calculations."""
-    history = History()
-    calculations = ["add 2 3 = 5", "subtract 5 2 = 3", "multiply 2 3 = 6"]
-    for calc in calculations:
-        history.add_calculation(calc)
-    assert history.get_history() == calculations
+    # Execute the command and assert that compute is called and returns the expected result
+    result = command.execute()
+    assert result == 10
+    mock_operation.compute.assert_called_once()  # Ensure compute() was called exactly once
+
+def test_add_to_history():
+    """
+    Test adding an operation to the history.
+    """
+    # Create a mock OperationCommand
+    mock_command = Mock(spec=OperationCommand)
+
+    # Create a HistoryManager instance
+    history_manager = HistoryManager()
+
+    # Add the mock command to history and verify that it is stored correctly
+    history_manager.add_to_history(mock_command)
+    assert len(history_manager.get_full_history()) == 1
+    assert history_manager.get_full_history()[0] == mock_command
+
+
+def test_get_latest():
+    """
+    Test retrieving the latest n operations from history.
+    """
+    # Create mock OperationCommand objects
+    mock_command_1 = Mock(spec=OperationCommand)
+    mock_command_2 = Mock(spec=OperationCommand)
+
+    # Create a HistoryManager instance
+    history_manager = HistoryManager()
+
+    # Add two commands to history
+    history_manager.add_to_history(mock_command_1)
+    history_manager.add_to_history(mock_command_2)
+
+    # Retrieve the latest operation
+    latest_operation = history_manager.get_latest(1)
+    assert len(latest_operation) == 1
+    assert latest_operation[0] == mock_command_2
+
+    # Retrieve the latest 2 operations
+    latest_two_operations = history_manager.get_latest(2)
+    assert len(latest_two_operations) == 2
+    assert latest_two_operations == [mock_command_1, mock_command_2]
+
 
 def test_clear_history():
-    """Positive test: Clear history after adding calculations."""
-    history = History()
-    history.add_calculation("add 2 3 = 5")
-    history.clear_history()
-    assert not history.get_history()  # Simplified comparison
+    """
+    Test clearing the history.
+    """
+    # Create mock OperationCommand objects
+    mock_command_1 = Mock(spec=OperationCommand)
+    mock_command_2 = Mock(spec=OperationCommand)
+
+    # Create a HistoryManager instance
+    history_manager = HistoryManager()
+
+    # Add two commands to history
+    history_manager.add_to_history(mock_command_1)
+    history_manager.add_to_history(mock_command_2)
+
+    # Clear the history
+    history_manager.clear_history()
+
+    # Assert that the history is now empty
+    assert len(history_manager.get_full_history()) == 0
+
 
 def test_undo_last():
-    """Positive test: Undo the last calculation."""
-    history = History()
-    history.add_calculation("add 2 3 = 5")
-    history.add_calculation("subtract 5 2 = 3")
-    history.undo_last()
-    assert history.get_history() == ["add 2 3 = 5"]
+    """
+    Test undoing the last operation in history.
+    """
+    # Create mock OperationCommand objects
+    mock_command_1 = Mock(spec=OperationCommand)
+    mock_command_2 = Mock(spec=OperationCommand)
 
-def test_undo_last_empty_history(capsys):
-    """Negative test: Undo last calculation when history is empty."""
-    history = History()
-    history.undo_last()
-    captured = capsys.readouterr()
-    assert captured.out.strip() == "History is already empty."
-    assert not history.get_history()  # Simplified comparison
+    # Create a HistoryManager instance
+    history_manager = HistoryManager()
 
-def test_get_history():
-    """Positive test: Retrieve history."""
-    history = History()
-    calculations = ["add 2 3 = 5", "multiply 4 5 = 20"]
-    for calc in calculations:
-        history.add_calculation(calc)
-    assert history.get_history() == calculations
+    # Add two commands to history
+    history_manager.add_to_history(mock_command_1)
+    history_manager.add_to_history(mock_command_2)
 
-def test_clear_history_empty():
-    """Positive test: Clear history when it's already empty."""
-    history = History()
-    history.clear_history()
-    assert not history.get_history()  # Simplified comparison
+    # Undo the last operation and verify the result
+    last_operation = history_manager.undo_last()
+    assert last_operation == mock_command_2
+    assert len(history_manager.get_full_history()) == 1
 
-def test_add_non_string_calculation():
-    """Negative test: Add non-string calculation."""
-    history = History()
-    with pytest.raises(TypeError):
-        history.add_calculation(12345)  # Should raise TypeError
+    # Undo the next operation
+    last_operation = history_manager.undo_last()
+    assert last_operation == mock_command_1
+    assert len(history_manager.get_full_history()) == 0
 
-def test_add_calculation_none():
-    """Negative test: Add None as a calculation."""
-    history = History()
-    with pytest.raises(TypeError):
-        history.add_calculation(None)  # Should raise TypeError
+    # Ensure that undoing when the history is empty returns None
+    last_operation = history_manager.undo_last()
+    assert last_operation is None
 
-def test_get_history_is_copy():
-    """Negative test: Ensure get_history returns a copy, not a reference."""
-    history = History()
-    history.add_calculation("add 1 1 = 2")
-    retrieved_history = history.get_history()
-    retrieved_history.append("subtract 2 1 = 1")
-    assert history.get_history() == ["add 1 1 = 2"]
-
-def test_undo_last_after_clear(capsys):
-    """Negative test: Undo last after clearing history."""
-    history = History()
-    history.add_calculation("add 2 3 = 5")
-    history.clear_history()
-    history.undo_last()
-    captured = capsys.readouterr()
-    assert captured.out.strip() == "History is already empty."
-    assert not history.get_history()  # Simplified comparison
+# Add a final newline here

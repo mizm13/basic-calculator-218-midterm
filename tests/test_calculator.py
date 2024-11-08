@@ -1,206 +1,118 @@
-""" tests/test_calculator.py """
-import math
-import sys
-from io import StringIO
-from app.calculator import calculator
+"""
+This module contains the test cases for the Calculator class, including 
+tests for performing operations, retrieving history, undoing operations, 
+and clearing the history.
+"""
+from unittest.mock import Mock
+import pytest  # pylint: disable=unused-import
+from app.calculation import Calculation
+from app.calculator import Calculator
+from app.history_manager import OperationCommand
 
-# Helper function to capture print statements
-def run_calculator_with_input(monkeypatch, inputs):
+def test_perform_operation():
     """
-    Simulates user input and captures output from the calculator REPL.
+    Test that Calculator performs an operation and stores it in the history.
     """
-    input_iterator = iter(inputs)
-    monkeypatch.setattr('builtins.input', lambda _: next(input_iterator))
+    # Create a mock Calculation object
+    mock_operation = Mock(spec=Calculation)
+    mock_operation.compute.return_value = 15  # Set compute return value
+    # Create an instance of the Calculator
+    calculator = Calculator()
 
-    # Capture the output of the calculator
-    captured_output = StringIO()
-    sys.stdout = captured_output
-    calculator()
-    sys.stdout = sys.__stdout__  # Reset stdout
-    return captured_output.getvalue()
+    # Perform the operation and assert the result
+    result = calculator.perform_operation(mock_operation)
+    assert result == 15
+    mock_operation.compute.assert_called_once()  # Ensure compute() was called once
 
+    # Check that the operation was added to the history
+    history = calculator.get_history()
+    assert len(history) == 1
+    assert isinstance(history[0], OperationCommand)
 
-# Positive Tests
-def test_addition(monkeypatch):
-    """Test addition operation in REPL."""
-    inputs = ["add 2 3", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.0" in output
+def test_get_history():
+    """
+    Test that Calculator retrieves the full history of operations.
+    """
+    # Create two mock Calculation objects
+    mock_operation_1 = Mock(spec=Calculation)
+    mock_operation_1.compute.return_value = 10
+    mock_operation_2 = Mock(spec=Calculation)
+    mock_operation_2.compute.return_value = 20
 
+    # Create an instance of the Calculator
+    calculator = Calculator()
 
-def test_subtraction(monkeypatch):
-    """Test subtraction operation in REPL."""
-    inputs = ["subtract 5 2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 3.0" in output
+    # Perform two operations
+    calculator.perform_operation(mock_operation_1)
+    calculator.perform_operation(mock_operation_2)
 
+    # Retrieve the full history
+    history = calculator.get_history()
+    assert len(history) == 2  # Two operations should be in the history
 
-def test_multiplication(monkeypatch):
-    """Test multiplication operation in REPL."""
-    inputs = ["multiply 4 5", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 20.0" in output
+    # Ensure the history contains OperationCommand objects
+    assert isinstance(history[0], OperationCommand)
+    assert isinstance(history[1], OperationCommand)
 
+def test_undo():
+    """
+    Test that Calculator can undo the last operation.
+    """
+    # Create two mock Calculation objects
+    mock_operation_1 = Mock(spec=Calculation)
+    mock_operation_1.compute.return_value = 10
+    mock_operation_2 = Mock(spec=Calculation)
+    mock_operation_2.compute.return_value = 20
 
-def test_division(monkeypatch):
-    """Test division operation in REPL."""
-    inputs = ["divide 10 2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.0" in output
+    # Create an instance of the Calculator
+    calculator = Calculator()
 
+    # Perform two operations
+    calculator.perform_operation(mock_operation_1)
+    calculator.perform_operation(mock_operation_2)
 
-def test_negative_numbers(monkeypatch):
-    """Test operations with negative numbers."""
-    inputs = ["add -2 3", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 1.0" in output
+    # Undo the last operation and check that the correct operation was undone
+    last_operation = calculator.undo()
+    assert last_operation.operation == mock_operation_2
 
-    inputs = ["subtract -5 -2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: -3.0" in output
+    # Check that the history now contains only the first operation
+    history = calculator.get_history()
+    assert len(history) == 1
+    assert history[0].operation == mock_operation_1
 
-    inputs = ["multiply -4 5", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: -20.0" in output
+    # Undo the first operation
+    last_operation = calculator.undo()
+    assert last_operation.operation == mock_operation_1
 
-    inputs = ["divide -10 -2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.0" in output
+    # Check that the history is now empty
+    assert len(calculator.get_history()) == 0
 
-def test_floating_point_numbers(monkeypatch):
-    """Test operations with floating point numbers."""
-    # Test addition
-    inputs = ["add 2.5 3.1", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.6" in output
+    # Undo when history is empty
+    last_operation = calculator.undo()
+    assert last_operation is None
 
-    # Test subtraction
-    inputs = ["subtract 5.5 2.2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 3.3" in output
+def test_clear_history():
+    """
+    Test that Calculator can clear the history.
+    """
+    # Create two mock Calculation objects
+    mock_operation_1 = Mock(spec=Calculation)
+    mock_operation_1.compute.return_value = 10
+    mock_operation_2 = Mock(spec=Calculation)
+    mock_operation_2.compute.return_value = 20
 
-    # Test multiplication
-    inputs = ["multiply 4.2 5.1", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
+    # Create an instance of the Calculator
+    calculator = Calculator()
 
-    # Extract the result from the output
-    result_line = next((line for line in output.split('\n') if "Result:" in line), None)
-    assert result_line is not None, "Result not found in output"
+    # Perform two operations
+    calculator.perform_operation(mock_operation_1)
+    calculator.perform_operation(mock_operation_2)
 
-    # Parse the result value
-    actual_result = float(result_line.split("Result: ")[1])
-    expected_result = 21.42
+    # Clear the history
+    calculator.clear_history()
 
-    # Use math.isclose to compare floating-point numbers
-    assert math.isclose(
-    actual_result, expected_result, rel_tol=1e-5
-), f"Expected {expected_result}, got {actual_result}"
+    # Check that the history is empty
+    history = calculator.get_history()
+    assert len(history) == 0
 
-
-def test_history_command(monkeypatch):
-    """Test the 'history' command with existing history."""
-    inputs = ["add 2 3", "history", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.0" in output
-    assert "Calculation History:" in output
-    assert "add 2.0 3.0 = 5.0" in output
-
-
-def test_history_command_no_history(monkeypatch):
-    """Test the 'history' command when there is no history."""
-    inputs = ["history", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Calculation History:" in output
-    # Since history is empty, there should be no calculations listed
-
-def test_clear_history(monkeypatch):
-    """Test the 'clear' command."""
-    inputs = ["add 2 3", "clear", "history", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "History cleared." in output
-    assert "Calculation History:" in output
-    # Ensure that history is empty after clearing
-    assert "add 2.0 3.0 = 5.0" not in output
-
-def test_undo_command(monkeypatch):
-    """Test the 'undo' command."""
-    inputs = ["add 2 3", "subtract 5 1", "undo", "history", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Last calculation undone." in output
-    assert "subtract 5.0 1.0 = 4.0" not in output
-    assert "add 2.0 3.0 = 5.0" in output
-
-def test_undo_command_empty_history(monkeypatch):
-    """Test 'undo' command when history is empty."""
-    inputs = ["undo", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "History is already empty." in output
-
-def test_exit_case_insensitivity(monkeypatch):
-    """Test 'exit' command in different cases."""
-    inputs = ["EXIT"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Exiting calculator..." in output
-
-    inputs = ["eXiT"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Exiting calculator..." in output
-
-def test_incomplete_input(monkeypatch):
-    """Test incomplete input handling."""
-    inputs = ["add 2", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Invalid input. Please follow the format" in output
-
-def test_extra_input(monkeypatch):
-    """Test handling of extra arguments in input."""
-    inputs = ["add 2 3 4", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Invalid input. Please follow the format" in output
-
-def test_invalid_numbers(monkeypatch):
-    """Test handling of invalid number inputs."""
-    inputs = ["add two three", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Invalid input. Please follow the format" in output
-
-def test_sequence_of_operations(monkeypatch):
-    """Test multiple calculations and history display."""
-    inputs = ["add 2 3", "multiply 5 2", "history", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 5.0" in output
-    assert "Result: 10.0" in output
-    assert "add 2.0 3.0 = 5.0" in output
-    assert "multiply 5.0 2.0 = 10.0" in output
-
-def test_clear_history_empty(monkeypatch):
-    """Test 'clear' command when history is already empty."""
-    inputs = ["clear", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "History cleared." in output
-    # No errors should occur when clearing an empty history
-
-def test_unknown_command(monkeypatch):
-    """Test handling of unknown commands."""
-    inputs = ["unknown_command", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Invalid input. Please follow the format" in output or "Unknown operation" in output
-
-def test_division_result_precision(monkeypatch):
-    """Test division result for precision."""
-    inputs = ["divide 1 3", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Result: 0.3333333333333333" in output
-
-def test_invalid_command_similar_to_valid(monkeypatch):
-    """Test invalid command similar to a valid one."""
-    inputs = ["ad 2 3", "exit"]  # Typo in 'add'
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Unknown operation 'ad'" in output
-
-def test_divide_by_zero(monkeypatch):
-    """Test division by zero error handling."""
-    inputs = ["divide 10 0", "exit"]
-    output = run_calculator_with_input(monkeypatch, inputs)
-    assert "Division by zero is not allowed." in output
-    
+# Add a final newline here
