@@ -1,40 +1,51 @@
-# app/history/__init__.py
-
-class History:
+from typing import List, Union
+# Command pattern for executing operations
+class OperationCommand:
     """
-    Class to manage the history of calculations.
+    Represents a record of an operation performed, used for history tracking.
     """
-    def __init__(self):
-        # Initialize an empty list to store calculations.
-        self.calculations = []
+    def __init__(self, operation: str, a: float, b: float, result: float) -> None:
+        self.operation = operation  # The operation performed (e.g., 'add')
+        self.a = a                  # The first operand
+        self.b = b                  # The second operand
+        self.result = result        # The result of the operation
 
-    def add_calculation(self, calculation: str):
-        """
-        Adds a calculation to the history.
-        :param calculation: String representation of the calculation.
-        """
-        if not isinstance(calculation, str):
-            raise TypeError("Calculation must be a string.")
-        self.calculations.append(calculation)
+    def __str__(self) -> str:
+        return f"{self.operation} {self.a} {self.b} = {self.result}"
 
-    def clear_history(self):
-        """
-        Clears all calculations from the history.
-        """
-        self.calculations.clear()
+class HistoryManager:
+    """
+    Manages the history of executed operations.
 
-    def undo_last(self):
-        """
-        Removes the last calculation from the history.
-        """
-        if self.calculations:
-            self.calculations.pop()
-        else:
-            print("History is already empty.")
+    This class allows adding to, retrieving, and undoing from a history of operations.
+    It stores a list of `OperationCommand` objects representing each calculation.
 
-    def get_history(self):
-        """
-        Retrieves a copy of the list of calculations.
-        :return: List of calculations.
-        """
-        return self.calculations.copy()
+    Attributes:
+    _history (List[OperationCommand]): List of operations executed.
+    """
+
+    def __init__(self) -> None:
+        """Initializes the history manager with an empty history list."""
+        self._history: List[OperationCommand] = []
+
+    def add_to_history(self, operation: 'OperationCommand') -> None:
+
+        self._history.append(operation)
+
+    def get_latest(self, n: int = 1) -> List['OperationCommand']:
+      
+        return self._history[-n:]
+
+    def clear_history(self) -> None:
+        """Clear the entire history."""
+        self._history.clear()
+
+    def get_full_history(self) -> List['OperationCommand']:
+
+        return self._history
+
+    def undo_last(self) -> Union['OperationCommand', None]:
+      
+        if self._history:
+            return self._history.pop()
+        return None
